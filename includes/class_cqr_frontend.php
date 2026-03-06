@@ -27,6 +27,7 @@ class CQR_Frontend
         add_shortcode("cqr_quote_form", array($this, "cqr_render_form"));
         add_action("init", array($this, "cqr_form_submission"));
         add_action("init", array($this, "register_quote_request_post"));
+        add_shortcode("cqr_display_quotes", array($this, "display_requested_qoutes"));
     }
 
     public function cqr_render_form()
@@ -140,6 +141,24 @@ class CQR_Frontend
         'menu_icon'          => 'dashicons-feedback',);
 
         register_post_type("quote_request", $args);
+    }
+
+    public function display_requested_qoutes()
+    {
+        $quote_list = new WP_Query(array("post_type" => "quote_request",
+                                            "post_status" => "publish"));
+        
+        if($quote_list -> have_posts())
+            {
+                while($quote_list -> have_posts())
+                    {
+                        $quote_list -> the_post();
+                        echo '<div class=quote_items bg-primary p-3 mt-3">';
+                            echo "<h3>" . esc_html(get_the_title()) . "<h3>";
+                            echo "<p>" . wp_kses_post(get_the_content()) . "<p>";
+                        echo '</div>';
+                    }
+            }
     }
 }
 
