@@ -32,10 +32,6 @@ class CQR_Frontend
 
     public function cqr_render_form()
     {
-        if(isset($_GET["cqr_success"]))
-            {
-                echo "<p style= 'color:green;'> Your quote has been sent successfully! </p>";
-            }
         ob_start(); ?>
         <div class="d-flex justify-content-center align-items-center">
 
@@ -96,14 +92,9 @@ class CQR_Frontend
 
                 $post_id = wp_insert_post($new_post);
 
-                if($post_id)
+                if($post_id && !is_wp_error($post_id))
                     {
-                        wp_mail(get_option("admin_email"), "New Quote Request", "Name: $name\nEmail: $email\nMessage: $message");
-                        if(!isset($_GET["cqr_success"]))
-                        {
-                            wp_redirect(add_query_arg('cqr_success', '1', wp_get_referer()));
-                            exit;
-                        }
+                        wp_redirect(home_url('/cqr-display-list/'));
                     }
             }
         
@@ -147,18 +138,23 @@ class CQR_Frontend
     {
         $quote_list = new WP_Query(array("post_type" => "quote_request",
                                             "post_status" => "publish"));
+        ob_start();
         
         if($quote_list -> have_posts())
             {
                 while($quote_list -> have_posts())
                     {
                         $quote_list -> the_post();
-                        echo '<div class=quote_items bg-primary p-3 mt-3">';
-                            echo "<h3>" . esc_html(get_the_title()) . "<h3>";
-                            echo "<p>" . wp_kses_post(get_the_content()) . "<p>";
+                        echo '<div class="bg-primary p-3 rounded-2">';
+                            echo '<h3 class="text-light fs-4>' . esc_html(get_the_title()) . "<h3>";
+                            echo '<p class="text-light fs-3">' . wp_kses_post(get_the_content()) . "<p>";
                         echo '</div>';
                     }
             }
+        else{
+            echo 'No Custom Query Found!';
+        }
+        return ob_get_clean();
     }
 }
 
